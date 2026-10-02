@@ -1,78 +1,90 @@
 # Windows File Permissions Troubleshooting Lab
 
 ## Scenario
-A user reported that they could see a required folder on the computer but received an access denied message when attempting to open it.
-
-## Objective
-Troubleshoot the user's folder access issue, identify the cause, correct the permissions, and verify that the user could access the folder successfully.
+A standard Windows user was unable to access a required folder. I created a controlled home-lab scenario to troubleshoot the access issue, identify the cause, correct the permissions, and verify that access was restored.
 
 ## Environment
-- Windows
-- Local User Accounts
+- Windows 10
+- Local standard user account
+- NTFS file permissions
 - Command Prompt
-- NTFS File Permissions
 - ICACLS
 
-## Lab Setup
-Created a local test user named `LabUser` using Command Prompt.
+## 1. Created the Test User
 
-Created a test folder:
+I created a local standard user named `LabUser` and verified that the account was active and belonged to the Users group.
 
-`C:\SupportLab`
+![User account created](01-user-account-created.jpg)
 
-Created a test file inside the folder:
+## 2. Created the Support Folder
 
-`employee-data.txt`
+I created `C:\SupportLab` and added a test file named `employee-data.txt`.
 
-An explicit DENY permission was intentionally assigned to LabUser to simulate a real user access issue.
+![SupportLab created](02-lab-folder-created.jpg)
 
-## Troubleshooting Process
+## 3. Created the Permission Issue
 
-### 1. Reproduced the Issue
-Signed into Windows as LabUser and attempted to open `C:\SupportLab`.
+To simulate a user access problem, I added an explicit DENY permission for LabUser using ICACLS.
 
-Windows displayed an error indicating that the user did not have permission to access the folder.
+`icacls C:\SupportLab /deny LabUser:(OI)(CI)F`
 
-### 2. Investigated Folder Permissions
-Checked the folder's security permissions and confirmed that LabUser could not read the folder permissions.
+![Deny permission added](03-deny-permission-added.jpg)
 
-Returned to the administrator account and used the following command:
+## 4. Reproduced the User's Issue
+
+I signed into the LabUser account and attempted to access the SupportLab folder.
+
+Windows displayed:
+
+"You don't currently have permission to access this folder."
+
+![Access denied](04-access-denied-error.jpg)
+
+## 5. Investigated the Permissions
+
+From an elevated Command Prompt, I inspected the folder's access control list:
 
 `icacls C:\SupportLab`
 
-The ACL showed an explicit DENY permission assigned to LabUser.
+The results showed an explicit DENY entry associated with LabUser.
 
-### 3. Identified the Root Cause
-The explicit DENY entry prevented LabUser from accessing the folder even though other user groups had permissions.
+![Permissions investigation](05-permissions-investigation.jpg)
 
-### 4. Resolved the Issue
-Removed the incorrect DENY permission using:
+## 6. Applied the Fix
+
+I removed the incorrect DENY permission:
 
 `icacls C:\SupportLab /remove:d LabUser`
 
-Windows confirmed that the folder was processed successfully.
+I then ran `icacls C:\SupportLab` again to verify that the LabUser DENY entry had been removed.
 
-### 5. Verified the Resolution
-Ran `icacls C:\SupportLab` again to confirm that the LabUser DENY entry had been removed.
+![Permission fixed and verified](06-permission-fixed-verified.jpg)
 
-Signed back into the LabUser account and opened `C:\SupportLab`.
+## 7. Verified User Access
 
-The user was able to successfully access the folder and view `employee-data.txt`.
+I signed back into the LabUser account and opened `C:\SupportLab`.
+
+The folder opened successfully and `employee-data.txt` was accessible.
+
+![Access restored](07-access-restored.jpg)
 
 ## Resolution
-Removed the incorrect explicit DENY permission from the affected user account and verified successful folder access.
+
+The access issue was caused by an explicit DENY permission assigned to the local user. After identifying and removing the incorrect permission, I verified that the affected user could access the folder successfully.
 
 ## Skills Practiced
-- Windows Troubleshooting
-- NTFS File Permissions
-- User Account Management
+
+- Windows troubleshooting
+- NTFS permissions
+- Local user account management
 - Access Control Lists (ACLs)
-- Command Prompt
 - ICACLS
-- Root Cause Analysis
-- User Access Troubleshooting
-- Issue Verification
-- Technical Documentation
+- Command Prompt
+- Root cause analysis
+- Access troubleshooting
+- Verification and testing
+- Technical documentation
 
 ## What I Learned
-This lab helped me understand how Windows file permissions can prevent users from accessing resources and how to use ICACLS to inspect and modify access control entries. I also practiced reproducing an issue from the user's perspective, identifying the root cause, applying a fix, and verifying the resolution.
+
+This lab gave me hands-on practice troubleshooting a Windows access issue from beginning to end: reproducing the problem, investigating permissions, identifying the root cause, applying a fix, and verifying the resolution from the affected user's account.
